@@ -5,7 +5,7 @@ from typing import Any
 import numpy as np
 import typing
 from mpl_toolkits.axisartist import Axes
-import matplotlib
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 from numpy import ndarray, dtype
 
@@ -93,9 +93,18 @@ def parse_data(buffer: typing.BinaryIO) -> Data:
 def draw_graph(data: Data):
     arr = np.reshape(data.data, [data.header.height, data.header.width])
     arr = np.rot90(arr)
-
-    graph = plt.imshow(arr, cmap='hot', interpolation=None, extent=[data.header.ystart, data.header.yend, data.header.xstart, data.header.xend])
-    plt.colorbar()
+    extents =[data.header.ystart, 
+           data.header.yend * data.header.stepy, 
+           data.header.xstart, 
+           data.header.xend * data.header.stepx]
+    plt.gca().set_yticks(np.arange(data.header.ystart, data.header.yend * data.header.stepy, 200))    
+    graph = plt.imshow(arr, cmap='hot', interpolation=None, 
+                       extent=extents)
+    norm = mpl.colors.Normalize(vmin=np.average(arr), vmax=np.average(arr) + 4)
+    bar = plt.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=graph.cmap), ax=graph.axes, label="Verbosity coefficient")
+    bar.set_ticks(np.linspace(np.average(arr), np.average(arr) + 4, num=9))
+    print(data.header.__dict__)
+    # Bottom: np.average(arr)
     plt.savefig('foo.png')
 
 
