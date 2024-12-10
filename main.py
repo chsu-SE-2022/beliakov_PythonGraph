@@ -86,14 +86,15 @@ def parse_data(buffer: typing.BinaryIO) -> Data:
     data_size = header_parsed.width * header_parsed.height
     data_raw = buffer.read(4 * data_size)
     data = np.array(struct.unpack(f'<{data_size}f', data_raw))
-    data = np.array(list(map(lambda x: (x + header_parsed.level), data)))
+    data = np.array(list(map(lambda x: x, data)))
     return Data(header_parsed, data)
 
 
 def draw_graph(data: Data):
     arr = np.reshape(data.data, [data.header.height, data.header.width])
     arr = np.rot90(arr)
-    graph = plt.imshow(arr, cmap='hot', interpolation=None)
+
+    graph = plt.imshow(arr, cmap='hot', interpolation=None, extent=[data.header.ystart, data.header.yend, data.header.xstart, data.header.xend])
     plt.colorbar()
     plt.savefig('foo.png')
 
